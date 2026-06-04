@@ -1,9 +1,11 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, session
 from datetime import datetime
 import sqlite3
 import calendar
 
 app = Flask(__name__)
+app.secret_key = "syoko_secret_key"
+
 DB = "money.db"
 
 # 支出カテゴリ
@@ -33,6 +35,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT,
+            user_type TEXT,
             customer TEXT,
             income INTEGER,
             income_note TEXT,
@@ -47,12 +50,88 @@ def init_db():
 
 init_db()
 
+# =========================
+# ログイン
+# =========================
+@app.route("/login", methods=["GET", "POST"])
+def login():
+
+    if request.method == "POST":
+
+        password = request.form.get("password")
+
+        if password == "0625":
+            return redirect("/?user=SYOKO")
+
+        elif password == "0000":
+            return redirect("/?user=guest")
+
+        else:
+            return """
+            <h2>パスワードが違います</h2>
+            <a href='/login'>戻る</a>
+            """
+
+    return """
+    <body style="
+        background:#d0f0ff;
+        font-family:Arial;
+        padding:30px;
+    ">
+
+    <div style="
+        background:white;
+        padding:20px;
+        border-radius:15px;
+    ">
+
+        <h2>ログイン</h2>
+
+        <form method="post">
+
+            <input
+                type="password"
+                name="password"
+                placeholder="パスワード"
+
+                style="
+                width:100%;
+                padding:12px;
+                margin-bottom:10px;
+                border-radius:10px;
+                border:1px solid #ccc;
+                box-sizing:border-box;
+                ">
+
+            <button style="
+                width:100%;
+                padding:12px;
+                background:#4da6ff;
+                color:white;
+                border:none;
+                border-radius:10px;
+            ">
+                ログイン
+            </button>
+
+        </form>
+
+    </div>
+
+    </body>
+    """
+
 
 # =========================
 # ホーム
 # =========================
 @app.route("/")
 def home():
+
+    user_type = request.args.get("user")
+
+    if not user_type:
+        return redirect("/login")
 
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -66,13 +145,19 @@ def home():
 
     year_select = request.args.get("year")
 
+    user_type = request.args.get("user")
+
+    if not user_type:
+        return redirect("/login")
+
     # =========================
     # 月データ
     # =========================
     c.execute("""
-        SELECT * FROM records
-        WHERE date LIKE ?
-    """, (f"{month}%",))
+    SELECT * FROM records
+    WHERE date LIKE ?
+    AND user_type = ?
+    """, (f"{month}%", user_type))
 
     month_records = c.fetchall()
 
@@ -111,7 +196,8 @@ def home():
         c.execute("""
             SELECT * FROM records
             WHERE date LIKE ?
-        """, (f"{year_select}%",))
+            AND user_type = ?
+        """, (f"{year_select}%", user_type))
 
         year_records = c.fetchall()
 
@@ -154,7 +240,8 @@ def home():
         c.execute("""
             SELECT * FROM records
             WHERE date = ?
-        """, (selected_date,))
+            AND user_type = ?
+        """, (selected_date, user_type))
 
         day_records = c.fetchall()
 
