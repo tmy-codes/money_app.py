@@ -5,6 +5,8 @@ import calendar
 
 app = Flask(__name__)
 app.secret_key = "syoko_secret_key"
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = True
 
 DB = "money.db"
 
@@ -62,10 +64,14 @@ def login():
 
         if password == "0625":
             session["user_type"] = "SYOKO"
+            print("LOGIN OK SYOKO")
+            print(dict(session))
             return redirect("/")
 
         elif password == "0000":
             session["user_type"] = "guest"
+            print("LOGIN OK GUEST")
+            print(dict(session))
             return redirect("/")
 
         else:
@@ -769,6 +775,8 @@ def add():
     selected_date = request.args.get("date")
     month = request.args.get("month")
 
+    user_type = session.get("user_type")
+
     customer = request.form.get("customer")
 
     income = request.form.get("income") or 0
@@ -787,6 +795,7 @@ def add():
     c.execute("""
         INSERT INTO records (
             date,
+            user_type,
             customer,
             income,
             income_note,
@@ -797,6 +806,7 @@ def add():
         VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         selected_date,
+        user_type,
         customer,
         int(income),
         income_note,
