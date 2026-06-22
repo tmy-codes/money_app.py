@@ -61,10 +61,12 @@ def login():
         password = request.form.get("password")
 
         if password == "0625":
-            return redirect("/?user=SYOKO")
+            session["user_type"] = "SYOKO"
+            return redirect("/")
 
         elif password == "0000":
-            return redirect("/?user=guest")
+            session["user_type"] = "guest"
+            return redirect("/")
 
         else:
             return """
@@ -127,8 +129,9 @@ def login():
 # =========================
 @app.route("/")
 def home():
+    print("SESSION =", dict(session))
 
-    user_type = request.args.get("user")
+    user_type = session.get("user_type")
 
     if not user_type:
         return redirect("/login")
@@ -145,10 +148,6 @@ def home():
 
     year_select = request.args.get("year")
 
-    user_type = request.args.get("user")
-
-    if not user_type:
-        return redirect("/login")
 
     # =========================
     # 月データ
