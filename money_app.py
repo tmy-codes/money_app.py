@@ -166,8 +166,8 @@ def home():
 
     month_records = c.fetchall()
 
-    total_month_income = sum(r[3] for r in month_records)
-    total_month_expense = sum(r[6] for r in month_records)
+    total_month_income = sum(r[4] for r in month_records)
+    total_month_expense = sum(r[7] for r in month_records)
 
     # =========================
     # 月内訳
@@ -206,8 +206,8 @@ def home():
 
         year_records = c.fetchall()
 
-        year_income = sum(r[3] for r in year_records)
-        year_expense = sum(r[6] for r in year_records)
+        year_income = sum(r[4] for r in year_records)
+        year_expense = sum(r[7] for r in year_records)
 
         for r in year_records:
 
@@ -232,8 +232,8 @@ def home():
                 "expense": 0
             }
 
-        data[d]["income"] += r[3]
-        data[d]["expense"] += r[6]
+        data[d]["income"] += r[4]
+        data[d]["expense"] += r[7]
 
     # =========================
     # 日別
@@ -651,10 +651,10 @@ def home():
 
         for r in day_records:
 
-            if r[3] > 0:
+            if r[4] > 0:
                 incomes.append(r)
 
-            if r[6] > 0:
+            if r[7] > 0:
                 expenses.append(r)
 
         # 収入一覧
@@ -679,11 +679,11 @@ def home():
                     padding:10px 0;
                 ">
 
-                    <b>{r[2]}</b><br>
+                    <b>{r[3]}</b><br>
 
-                    {r[3]}円<br>
+                    {r[4]}円<br>
 
-                    {r[4]}<br><br>
+                    {r[5]}<br><br>
 
                     <a href="/edit/{r[0]}?date={selected_date}&month={month}">
                         編集
@@ -701,7 +701,7 @@ def home():
         else:
             html += "<p>なし</p>"
 
-        total_income = sum(r[3] for r in incomes)
+        total_income = sum(int(r[4]) for r in incomes)
 
         html += f"""
         <hr>
@@ -731,11 +731,11 @@ def home():
                     padding:10px 0;
                 ">
 
-                    <b>{r[5]}</b><br>
+                    <b>{r[6]}</b><br>
 
-                    {r[6]}円<br>
+                    {r[7]}円<br>
 
-                    {r[7]}<br><br>
+                    {r[8]}<br><br>
 
                     <a href="/edit/{r[0]}?date={selected_date}&month={month}">
                         編集
@@ -753,7 +753,7 @@ def home():
         else:
             html += "<p>なし</p>"
 
-        total_expense = sum(r[6] for r in expenses)
+        total_expense = sum(int(r[7]) for r in expenses)
 
         html += f"""
         <hr>
@@ -803,7 +803,7 @@ def add():
             expense,
             expense_note
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         selected_date,
         user_type,
@@ -885,18 +885,6 @@ def edit(id):
           method="post">
 
         <input name="customer"
-               value="{r[2]}"
-
-               style="
-               width:100%;
-               padding:12px;
-               margin-bottom:10px;
-               border-radius:10px;
-               border:1px solid #ccc;
-               box-sizing:border-box;
-               ">
-
-        <input name="income"
                value="{r[3]}"
 
                style="
@@ -908,7 +896,7 @@ def edit(id):
                box-sizing:border-box;
                ">
 
-        <input name="income_note"
+        <input name="income"
                value="{r[4]}"
 
                style="
@@ -920,7 +908,7 @@ def edit(id):
                box-sizing:border-box;
                ">
 
-        <input name="expense_category"
+        <input name="income_note"
                value="{r[5]}"
 
                style="
@@ -932,7 +920,7 @@ def edit(id):
                box-sizing:border-box;
                ">
 
-        <input name="expense"
+        <input name="expense_category"
                value="{r[6]}"
 
                style="
@@ -944,8 +932,20 @@ def edit(id):
                box-sizing:border-box;
                ">
 
-        <input name="expense_note"
+        <input name="expense"
                value="{r[7]}"
+
+               style="
+               width:100%;
+               padding:12px;
+               margin-bottom:10px;
+               border-radius:10px;
+               border:1px solid #ccc;
+               box-sizing:border-box;
+               ">
+
+        <input name="expense_note"
+               value="{r[8]}"
 
                style="
                width:100%;
